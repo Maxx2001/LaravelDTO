@@ -1,0 +1,78 @@
+{
+  "$schema": "./ai-docs.schema.json",
+
+  "project": {
+    "name": "Your Project Name",
+    "description": "Brief description of your Laravel DDD project"
+  },
+
+  "language": "nl",
+
+  "paths": {
+    "domainSource": "src/Domain",
+    "docsOutput": "docs",
+    "domainsOutput": "docs/domains",
+    "logicOutput": "docs/logic",
+    "casesOutput": "docs/cases",
+    "templatesPath": "templates"
+  },
+
+  "framework": {
+    "type": "laravel",
+    "version": "11.x",
+    "patterns": {
+      "actions": "Actions",
+      "dtos": "DataTransferObjects",
+      "models": "Models",
+      "services": "Services",
+      "controllers": "app/Http/Controllers"
+    }
+  },
+
+  "generation": {
+    "features": {
+      "domains": true,
+      "businessLogic": true,
+      "cases": true,
+      "gettingStarted": true,
+      "cursorContext": true
+    },
+    "options": {
+      "includeCodeExamples": true,
+      "includeMermaidDiagrams": true,
+      "includeQAScenarios": true,
+      "exhaustiveDocumentation": true,
+      "autoCleanup": true
+    },
+    "skipDomains": [],
+    "priorityDomains": []
+  },
+
+  "mintlify": {
+    "configFile": "docs.json",
+    "theme": "mint",
+    "colors": {
+      "primary": "#16A34A",
+      "light": "#07C983",
+      "dark": "#15803D"
+    },
+    "logo": {
+      "light": "/logo/light.svg",
+      "dark": "/logo/dark.svg"
+    }
+  },
+
+  "style": {
+    "tone": "professional",
+    "audience": "developers",
+    "codeBlocks": {
+      "alwaysIncludeFilename": true,
+      "defaultLanguage": "php"
+    }
+  },
+
+  "git": {
+    "defaultCompareBranch": "master"
+  }
+}
+

@@ -1,0 +1,223 @@
+---
+title: "Incremental Documentation Updates"
+description: "Update documentatie automatisch bij code wijzigingen zonder alles opnieuw te genereren"
+icon: "arrows-rotate"
+---
+
+## Overzicht
+
+De **Incremental Documentation Update** stap maakt het mogelijk om documentatie automatisch bij te werken wanneer je code wijzigingen maakt, zonder de volledige documentatie opnieuw te genereren.
+
+<Tip>
+  **Wanneer gebruiken:** Na het maken van wijzigingen aan Models, DTOs, Actions, of het toevoegen van nieuwe domains.
+</Tip>
+
+## Wat doet deze stap?
+
+- 🔍 **Detecteert changes** via git diff (vergelijk met branch of uncommitted changes)
+- 📝 **Werkt alleen relevante bestanden bij** (domains, logic flows, cases)
+- ✅ **Valideert alle wijzigingen** (syntax, frontmatter, Mintlify components)
+- 🔗 **Werkt navigatie bij** als bestanden worden toegevoegd/verwijderd
+- 🎯 **Behoudt consistentie** met bestaande documentatie stijl
+
+## Wanneer gebruiken?
+
+Gebruik deze stap wanneer je:
+- ✅ Code wijzigingen hebt gemaakt in `src/Domain/`
+- ✅ Nieuwe Actions, DTOs, of Models hebt toegevoegd
+- ✅ Je documentatie wilt synchroniseren met changes vanaf een branch
+- ✅ Niet de volledige documentatie wilt regenereren
+
+## Hoe te gebruiken
+
+### Stap 1: Open Cursor Composer
+
+Press `Cmd + E` (Mac) or `Ctrl + E` (Windows) om de Composer agents te openen.
+
+### Stap 2: Load Context
+
+Geef de volgende context aan Cursor door `@` te typen en te selecteren:
+
+- `@src/Domain` (Selecteer de hele Domain folder)
+- `@docs/domains/` (Alle bestaande domain documentatie)
+- `@docs/logic/` (Alle bestaande business logic documentatie)
+- `@docs/cases/` (Alle bestaande case documentatie)
+- `@docs/docs.json` (Navigatie structuur)
+- `@docs/templates/DOCS_TEMPLATE.md` (Domain documentatie style guide)
+- `@docs/templates/LOGIC_TEMPLATE.MD` (Business logic style guide)
+
+### Stap 3: Voer de Update uit
+
+Kopieer en plak de onderstaande prompt in de Composer chat en druk op **Enter**:
+
+```text
+You are an autonomous Documentation Engineer. Execute ONLY the Incremental Documentation Update step.
+
+**CRITICAL:** This step updates ONLY the documentation files affected by code changes. Do NOT regenerate all documentation.
+
+**EXECUTE INCREMENTAL DOCUMENTATION UPDATE:**
+
+**Step 1 - Detect Changed Files:**
+- Ask the user: "Which branch should I compare against? (master/dev/main/other - or press Enter for uncommitted changes only)"
+- If user provides a branch name:
+  * Run: `git diff --name-only [branch-name]` to get list of changed files
+  * Also check: `git diff --name-only [branch-name] --staged` for staged changes
+- If user wants uncommitted changes only:
+  * Run: `git diff --name-only` for unstaged changes
+  * Run: `git diff --name-only --staged` for staged changes
+- **CRITICAL:** Filter to only include files in `src/Domain/` (ignore other changes)
+- Create a list of all changed domain files with their paths
+- Present the list to the user and ask: "I found [N] changed files. Proceed with updating documentation? (yes/no)"
+
+**Step 2 - Analyze Changes:**
+For each changed file, determine what type of change it is:
+- **Domain Model changes** → Update `docs/domains/[domain-name].mdx`
+- **Action changes** → Update both:
+  * `docs/domains/[domain-name].mdx` (if Action is new or signature changed)
+  * `docs/logic/[action-name].mdx` (if business logic flow changed)
+- **DTO changes** → Update `docs/domains/[domain-name].mdx` (DTO section)
+- **New Domain** → Create new `docs/domains/[domain-name].mdx`
+- **New Action** → Create new `docs/logic/[action-name].mdx` AND update domain doc
+- **Deleted Domain/Action** → Remove corresponding documentation files
+
+**Step 3 - Read Changed Code:**
+- For each changed file, read the current version
+- Compare with the previous version (from git) to understand what changed:
+  * New methods/properties added?
+  * Methods/properties removed?
+  * Method signatures changed?
+  * Business logic modified?
+  * DTO properties added/removed/changed?
+
+**Step 4 - Update Domain Documentation:**
+For each affected domain:
+- Read the existing `docs/domains/[domain-name].mdx` file (or create if new)
+- Update the relevant sections:
+  * If DTOs changed: Update DTO documentation with new/removed/changed properties using `<ParamField>` components
+  * If Actions changed: Update Action documentation with new signatures, parameters, return types, and usage examples
+  * If Models changed: Update Model documentation with new relationships, attributes, methods
+- **CRITICAL:** Use `@docs/templates/DOCS_TEMPLATE.md` as style guide
+- **CRITICAL:** Maintain the same format and structure as existing documentation
+- **CRITICAL:** Include filename in code examples (e.g., ````php app/Domain/Assignments/Actions/CreateAssignmentAction.php`)
+
+**Step 5 - Update Business Logic Documentation:**
+For each affected Action:
+- Check if `docs/logic/[action-name].mdx` exists
+- If it exists:
+  * Read the existing file
+  * Update the flow diagram if logic changed (Mermaid diagram)
+  * Update business rules if rules changed (AccordionGroup format)
+  * Update edge cases if new edge cases were introduced (Warning blocks)
+  * Update QA scenarios if behavior changed (complete scenarios with test data)
+- If it doesn't exist and the Action is new:
+  * Create new `docs/logic/[action-name].mdx` following `@docs/templates/LOGIC_TEMPLATE.MD`
+  * Include complete Mermaid diagram with ALL steps, decision points, and error paths
+  * Document ALL business rules in AccordionGroup format
+  * Document ALL edge cases with Warning blocks
+  * Include complete QA scenarios (Happy Path + minimum 3-5 edge cases)
+- **CRITICAL:** Use `@docs/templates/LOGIC_TEMPLATE.MD` as style guide
+- **CRITICAL:** Do NOT summarize - document every step, every rule, every edge case
+
+**Step 6 - Update Cases Documentation (if needed):**
+- Check if any changed Actions are referenced in `docs/cases/` files
+- If a case document references a changed Action:
+  * Read the case document
+  * Update the relevant sections to reflect the changes
+  * Update any flow diagrams or descriptions
+  * Ensure links to updated Actions/Domains are still valid
+
+**Step 7 - Update Navigation (if files added/removed):**
+- If new documentation files were created:
+  * Read `docs/docs.json`
+  * Add new files to appropriate tab's `pages` array:
+    - Domain files → "Domains" tab
+    - Logic files → "Business Logic" tab
+    - Case files → "Cases" tab
+- If documentation files were deleted:
+  * Read `docs/docs.json`
+  * Remove deleted files from appropriate tab's `pages` array
+- **CRITICAL:** Maintain the 4-tab structure (Getting Started, Business Logic, Cases, Domains)
+
+**Step 8 - Validate Updated Files:**
+- Check syntax of all updated `.mdx` files:
+  * Verify frontmatter is valid YAML (title and description as quoted strings)
+  * Check for unclosed Mintlify components (`<Card>`, `</Card>`, `<AccordionGroup>`, etc.)
+  * Verify PHP generics are escaped (e.g., `Collection&lt;User&gt;` or wrapped in backticks)
+- Validate `docs.json` syntax:
+  * Check for trailing commas
+  * Verify all JSON keys are properly quoted
+  * Ensure arrays and objects are properly closed
+- Report any issues found and fix them
+
+**Step 9 - Report Summary:**
+- List all files that were changed in code (with paths)
+- List all documentation files that were updated (with paths)
+- List any new documentation files created (with paths)
+- List any documentation files removed (with paths)
+- Confirm that all changes have been reflected in documentation
+- Provide a summary of what was updated and why
+
+Report when Incremental Documentation Update is complete. Do NOT proceed to other tasks.
+```
+
+## Vergelijkingsmodi
+
+De stap ondersteunt **twee vergelijkingsmodi**:
+
+### 1. Branch Comparison Mode
+
+Vergelijk je huidige branch tegen een target branch (master/dev/main):
+
+```bash
+# Alle changes in je branch sinds master
+git diff --name-only master
+```
+
+### 2. Uncommitted Changes Mode
+
+Alleen uncommitted lokale changes:
+
+```bash
+# Alleen uncommitted changes
+git diff --name-only
+git diff --name-only --staged
+```
+
+## Gebruiksvoorbeelden
+
+### Voorbeeld 1: Na het wijzigen van een Action
+
+```bash
+# Je hebt gewijzigd: src/Domain/Assignments/Actions/CreateAssignmentAction.php
+# Stap zal:
+# ✅ docs/domains/assignments.mdx bijwerken (Action sectie)
+# ✅ docs/logic/assignment-creation.mdx bijwerken (als logica is veranderd)
+```
+
+### Voorbeeld 2: Na het toevoegen van een DTO property
+
+```bash
+# Je hebt een property toegevoegd aan: src/Domain/Assignments/DTOs/CreateAssignmentDTO.php
+# Stap zal:
+# ✅ docs/domains/assignments.mdx bijwerken (DTO sectie met nieuwe <ParamField>)
+```
+
+### Voorbeeld 3: Na het aanmaken van een nieuw Domain
+
+```bash
+# Je hebt aangemaakt: src/Domain/Invoices/
+# Stap zal:
+# ✅ docs/domains/invoices.mdx aanmaken
+# ✅ docs/logic/ bestanden aanmaken voor alle Actions in het domain
+# ✅ docs/docs.json navigatie bijwerken
+```
+
+## Voordelen
+
+- ⚡ **Snel** - Werkt alleen bij wat veranderd is, niet alles
+- 🎯 **Gefocust** - Geen risico op overschrijven van ongerelateerde documentatie
+- 🔄 **Incrementeel** - Perfect voor doorlopende development workflow
+- ✅ **Veilig** - Valideert alle wijzigingen voor voltooiing
+- 🚀 **Efficiënt** - Run wanneer je wilt tijdens development
+
+

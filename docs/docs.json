@@ -1,0 +1,80 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "AI Docs Kit",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guide",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              {
+                "group": "AI Tools",
+                "pages": [
+                  "ai-tools/cursor",
+                  "ai-tools/claude-code",
+                  "ai-tools/windsurf"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/sample-domain",
+              "examples/sample-logic-flow",
+              "examples/sample-case"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Mintlify Docs",
+          "href": "https://mintlify.com/docs",
+          "icon": "book-open-cover"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/your-org/ai-docs"
+      }
+    ]
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/your-org/ai-docs"
+    }
+  }
+}

@@ -1,0 +1,191 @@
+---
+title: "Assignments"
+description: "Domain documentation for the Assignments domain"
+---
+
+This is an **example** of what generated domain documentation looks like. Your actual output will be based on your codebase.
+
+---
+
+## Concept
+
+The Assignments domain handles the creation, management, and lifecycle of work assignments. Users can:
+
+- Create new assignments with specific requirements
+- Assign workers to tasks
+- Track assignment status and progress
+- Complete or cancel assignments
+
+---
+
+## Data Structuur (DTOs)
+
+### CreateAssignmentDTO
+
+Data transfer object for creating a new assignment.
+
+<ParamField path="title" type="string" required>
+  The title of the assignment
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  Detailed description of what needs to be done
+</ParamField>
+
+<ParamField path="deadline" type="Carbon" required>
+  When the assignment must be completed
+</ParamField>
+
+<ParamField path="priority" type="string" default="normal">
+  Priority level: `low`, `normal`, `high`, `urgent`
+</ParamField>
+
+<ParamField path="assignee_id" type="int">
+  Optional user ID to assign immediately
+</ParamField>
+
+<ParamField path="tags" type="array">
+  Optional tags for categorization
+</ParamField>
+
+---
+
+### UpdateAssignmentDTO
+
+Data transfer object for updating an existing assignment.
+
+<ParamField path="id" type="int" required>
+  The assignment ID to update
+</ParamField>
+
+<ParamField path="title" type="string">
+  Updated title
+</ParamField>
+
+<ParamField path="description" type="string">
+  Updated description
+</ParamField>
+
+<ParamField path="status" type="string">
+  New status: `pending`, `in_progress`, `completed`, `cancelled`
+</ParamField>
+
+---
+
+## Belangrijkste Acties
+
+### CreateAssignmentAction
+
+Creates a new assignment in the system.
+
+**Functionaliteit:**
+- Validates the input data
+- Creates the assignment record
+- Sends notification to assignee (if specified)
+- Logs the creation event
+- Returns the created assignment
+
+**Gebruik:**
+
+```php src/Domain/Assignments/Actions/CreateAssignmentAction.php
+use App\Domain\Assignments\Actions\CreateAssignmentAction;
+use App\Domain\Assignments\DTOs\CreateAssignmentDTO;
+
+$action = app(CreateAssignmentAction::class);
+
+$dto = new CreateAssignmentDTO(
+    title: 'Review pull request',
+    description: 'Review and approve the authentication PR',
+    deadline: now()->addDays(2),
+    priority: 'high',
+    assignee_id: 42
+);
+
+$assignment = $action->execute($dto);
+```
+
+---
+
+### UpdateAssignmentAction
+
+Updates an existing assignment.
+
+**Functionaliteit:**
+- Finds the assignment by ID
+- Validates update permissions
+- Updates only provided fields
+- Triggers status change events if applicable
+- Returns the updated assignment
+
+**Gebruik:**
+
+```php src/Domain/Assignments/Actions/UpdateAssignmentAction.php
+use App\Domain\Assignments\Actions\UpdateAssignmentAction;
+use App\Domain\Assignments\DTOs\UpdateAssignmentDTO;
+
+$action = app(UpdateAssignmentAction::class);
+
+$dto = new UpdateAssignmentDTO(
+    id: 123,
+    status: 'completed'
+);
+
+$assignment = $action->execute($dto);
+```
+
+---
+
+### DeleteAssignmentAction
+
+Soft-deletes an assignment.
+
+**Functionaliteit:**
+- Validates deletion permissions
+- Checks for dependent records
+- Soft-deletes the assignment
+- Notifies relevant parties
+
+**Gebruik:**
+
+```php src/Domain/Assignments/Actions/DeleteAssignmentAction.php
+use App\Domain\Assignments\Actions\DeleteAssignmentAction;
+
+$action = app(DeleteAssignmentAction::class);
+
+$action->execute(assignmentId: 123);
+```
+
+---
+
+## Model Details
+
+### Assignment Model
+
+**Relaties:**
+
+| Method | Type | Related Model |
+|--------|------|---------------|
+| `user()` | BelongsTo | User |
+| `assignee()` | BelongsTo | User |
+| `comments()` | HasMany | Comment |
+| `attachments()` | HasMany | Attachment |
+| `tags()` | BelongsToMany | Tag |
+
+**Scopes:**
+
+| Scope | Description |
+|-------|-------------|
+| `scopePending()` | Filter pending assignments |
+| `scopeOverdue()` | Filter overdue assignments |
+| `scopeForUser($userId)` | Filter by user |
+
+**Accessors:**
+
+| Accessor | Returns |
+|----------|---------|
+| `is_overdue` | Boolean if past deadline |
+| `status_label` | Human-readable status |
+| `formatted_deadline` | Formatted deadline string |
+
+
+

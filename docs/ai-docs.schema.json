@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AI Docs Configuration",
+  "description": "Configuration schema for the AI Documentation Kit for Laravel DDD projects",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "object",
+      "description": "Project information",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of your project"
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of your project"
+        }
+      },
+      "required": ["name"]
+    },
+    "language": {
+      "type": "string",
+      "description": "Documentation language code",
+      "enum": ["nl", "en", "de", "fr", "es"],
+      "default": "nl"
+    },
+    "paths": {
+      "type": "object",
+      "description": "File and directory paths",
+      "properties": {
+        "domainSource": {
+          "type": "string",
+          "description": "Path to domain source code",
+          "default": "src/Domain"
+        },
+        "docsOutput": {
+          "type": "string",
+          "description": "Output directory for documentation",
+          "default": "docs"
+        },
+        "domainsOutput": {
+          "type": "string",
+          "description": "Output directory for domain documentation",
+          "default": "docs/domains"
+        },
+        "logicOutput": {
+          "type": "string",
+          "description": "Output directory for business logic documentation",
+          "default": "docs/logic"
+        },
+        "casesOutput": {
+          "type": "string",
+          "description": "Output directory for case documentation",
+          "default": "docs/cases"
+        },
+        "templatesPath": {
+          "type": "string",
+          "description": "Path to documentation templates",
+          "default": "templates"
+        }
+      }
+    },
+    "framework": {
+      "type": "object",
+      "description": "Framework-specific settings",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Framework type",
+          "enum": ["laravel", "symfony", "custom"],
+          "default": "laravel"
+        },
+        "version": {
+          "type": "string",
+          "description": "Framework version"
+        },
+        "patterns": {
+          "type": "object",
+          "description": "Naming patterns for DDD components",
+          "properties": {
+            "actions": {
+              "type": "string",
+              "default": "Actions"
+            },
+            "dtos": {
+              "type": "string",
+              "default": "DataTransferObjects"
+            },
+            "models": {
+              "type": "string",
+              "default": "Models"
+            },
+            "services": {
+              "type": "string",
+              "default": "Services"
+            },
+            "controllers": {
+              "type": "string",
+              "default": "app/Http/Controllers"
+            }
+          }
+        }
+      }
+    },
+    "generation": {
+      "type": "object",
+      "description": "Documentation generation settings",
+      "properties": {
+        "features": {
+          "type": "object",
+          "description": "Which documentation features to generate",
+          "properties": {
+            "domains": { "type": "boolean", "default": true },
+            "businessLogic": { "type": "boolean", "default": true },
+            "cases": { "type": "boolean", "default": true },
+            "gettingStarted": { "type": "boolean", "default": true },
+            "cursorContext": { "type": "boolean", "default": true }
+          }
+        },
+        "options": {
+          "type": "object",
+          "description": "Generation options",
+          "properties": {
+            "includeCodeExamples": { "type": "boolean", "default": true },
+            "includeMermaidDiagrams": { "type": "boolean", "default": true },
+            "includeQAScenarios": { "type": "boolean", "default": true },
+            "exhaustiveDocumentation": { "type": "boolean", "default": true },
+            "autoCleanup": { "type": "boolean", "default": true }
+          }
+        },
+        "skipDomains": {
+          "type": "array",
+          "description": "Domain names to skip during generation",
+          "items": { "type": "string" }
+        },
+        "priorityDomains": {
+          "type": "array",
+          "description": "Domains to process first",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "mintlify": {
+      "type": "object",
+      "description": "Mintlify-specific settings",
+      "properties": {
+        "configFile": {
+          "type": "string",
+          "description": "Mintlify config filename",
+          "enum": ["docs.json", "mint.json"],
+          "default": "docs.json"
+        },
+        "theme": {
+          "type": "string",
+          "description": "Mintlify theme"
+        },
+        "colors": {
+          "type": "object",
+          "properties": {
+            "primary": { "type": "string" },
+            "light": { "type": "string" },
+            "dark": { "type": "string" }
+          }
+        },
+        "logo": {
+          "type": "object",
+          "properties": {
+            "light": { "type": "string" },
+            "dark": { "type": "string" }
+          }
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "description": "Documentation style settings",
+      "properties": {
+        "tone": {
+          "type": "string",
+          "enum": ["professional", "casual", "technical"],
+          "default": "professional"
+        },
+        "audience": {
+          "type": "string",
+          "enum": ["developers", "managers", "mixed"],
+          "default": "developers"
+        },
+        "codeBlocks": {
+          "type": "object",
+          "properties": {
+            "alwaysIncludeFilename": { "type": "boolean", "default": true },
+            "defaultLanguage": { "type": "string", "default": "php" }
+          }
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "description": "Git integration settings",
+      "properties": {
+        "defaultCompareBranch": {
+          "type": "string",
+          "description": "Default branch to compare against for incremental updates",
+          "default": "master"
+        }
+      }
+    }
+  },
+  "required": ["project"]
+}
+
