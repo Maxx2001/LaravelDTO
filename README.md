@@ -30,20 +30,13 @@
 - 🎨 **Modern Frontend** - Vue.js 3 + TypeScript + Inertia.js + Tailwind CSS
 - 🧪 **Comprehensive Testing** - Unit, Feature, and Integration tests
 - 📊 **Code Quality Tools** - PHPStan Level 8, ESLint, Prettier
-- 🤖 **Auto Documentation** - Comprehensive docs generated via CI/CD
+- 🤖 **Auto Documentation** - Documentation automatically generated via CI/CD
 - 🐳 **Docker Ready** - Complete development environment with DDEV
 - 🚀 **CI/CD Pipeline** - GitHub Actions for testing, linting, and deployment
 
 ## 📚 Documentation
 
-For detailed technical information, please refer to our comprehensive documentation:
-
-- 📖 **[Architecture Guide](docs/ARCHITECTURE.md)** - Learn about the DDD structure and patterns
-- 🛠️ **[Local Development](docs/LOCAL_DEVELOPMENT.md)** - Get started with development setup
-- 🚀 **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment instructions
-- 🔧 **[Pipeline Setup](docs/PIPELINE_SETUP.md)** - CI/CD configuration details
-- 📊 **[Code Quality](docs/CODE_QUALITY.md)** - Quality standards and tools
-- 🌐 **[API Reference](docs/API.md)** - Complete API documentation
+Documentation is automatically generated via CI/CD and kept up-to-date with the codebase. Check the `docs/generated/` directory for auto-generated documentation files.
 
 ## 👥 Contributors
 

@@ -652,22 +652,6 @@ cat > docs/generated/documentation-index.md << EOF
 
 **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 
-## 📚 Manual Documentation (Comprehensive Guides)
-
-EOF
-
-find docs/ -maxdepth 1 -name "*.md" -not -path "*/generated/*" | sort | while read file; do
-    title=$(head -n 1 "$file" | sed 's/^# //')
-    filename=$(basename "$file")
-    echo "### [$title]($filename)" >> docs/generated/documentation-index.md
-    echo "- **File:** \`$file\`" >> docs/generated/documentation-index.md
-    echo "- **Size:** \`$(wc -l < "$file") lines\`" >> docs/generated/documentation-index.md
-    echo "- **Last Modified:** \`$(date -r "$file" +"%Y-%m-%d %H:%M:%S")\`" >> docs/generated/documentation-index.md
-    echo "" >> docs/generated/documentation-index.md
-done
-
-cat >> docs/generated/documentation-index.md << EOF
-
 ## 🤖 Auto-Generated Documentation (Live Code Analysis)
 
 ### Architecture & Code Analysis
@@ -689,9 +673,8 @@ cat >> docs/generated/documentation-index.md << EOF
 - [📋 Recent Changes](recent-changes.md) - Git History
 
 ## 📊 Documentation Statistics
-- **Total Manual Docs:** \`$(find docs/ -maxdepth 1 -name "*.md" -not -path "*/generated/*" | wc -l) files\`
 - **Total Auto-Generated:** \`$(find docs/generated/ -name "*.md" | wc -l) files\`
-- **Total Lines:** \`$(find docs/ -name "*.md" | xargs wc -l | tail -n 1 | awk '{print $1}') lines\`
+- **Total Lines:** \`$(find docs/generated/ -name "*.md" | xargs wc -l 2>/dev/null | tail -n 1 | awk '{print $1}') lines\`
 - **Last Updated:** \`$(date -u +"%Y-%m-%d %H:%M:%S UTC")\`
 
 EOF
@@ -709,71 +692,38 @@ This project includes comprehensive documentation covering:
 
 EOF
 
-# Extract key information from manual docs
+# Architecture & Design information
 cat >> docs/generated/summary.md << EOF
 ### 🏗️ Architecture & Design
-EOF
-
-if [ -f "docs/ARCHITECTURE.md" ]; then
-    echo "- **Domain Driven Design**: $(grep -c "domain\|Domain\|DDD" docs/ARCHITECTURE.md) references" >> docs/generated/summary.md
-    echo "- **Clean Architecture**: Layered approach with strict dependency direction" >> docs/generated/summary.md
-    echo "- **Design Patterns**: DTOs, Actions, Repository patterns" >> docs/generated/summary.md
-fi
-
-cat >> docs/generated/summary.md << EOF
+- **Domain Driven Design**: Layered approach with strict dependency direction
+- **Clean Architecture**: Domain, Application, and Support layers
+- **Design Patterns**: DTOs, Actions, Repository patterns
 
 ### 🧪 Testing & Quality
-EOF
-
-if [ -f "docs/TESTING.md" ]; then
-    echo "- **Test Types**: Unit, Integration, Feature tests" >> docs/generated/summary.md
-    echo "- **Coverage**: 85%+ target coverage" >> docs/generated/summary.md
-    echo "- **Quality Tools**: PHPStan Level 8, ESLint, Prettier" >> docs/generated/summary.md
-fi
-
-cat >> docs/generated/summary.md << EOF
+- **Test Types**: Unit, Integration, Feature tests
+- **Coverage**: Comprehensive test coverage
+- **Quality Tools**: PHPStan Level 8, ESLint, Prettier
 
 ### 🚀 Deployment & Operations
-EOF
-
-if [ -f "docs/DEPLOYMENT.md" ]; then
-    echo "- **Environments**: Development, Staging, Production" >> docs/generated/summary.md
-    echo "- **Automation**: Zero-downtime deployments" >> docs/generated/summary.md
-    echo "- **Monitoring**: Health checks, logging, backups" >> docs/generated/summary.md
-fi
-
-cat >> docs/generated/summary.md << EOF
+- **Environments**: Development, Staging, Production
+- **Automation**: CI/CD pipeline with automated deployments
+- **Monitoring**: Health checks, logging, backups
 
 ### 🔧 Development Experience
-EOF
-
-if [ -f "docs/LOCAL_DEVELOPMENT.md" ]; then
-    echo "- **Local Setup**: DDEV, Docker, native development" >> docs/generated/summary.md
-    echo "- **Developer Tools**: Hot reload, debugging, profiling" >> docs/generated/summary.md
-    echo "- **Quick Commands**: Development shortcuts and utilities" >> docs/generated/summary.md
-fi
-
-cat >> docs/generated/summary.md << EOF
+- **Local Setup**: DDEV, Docker, native development
+- **Developer Tools**: Hot reload, debugging, profiling
+- **Quick Commands**: Development shortcuts and utilities
 
 ### 🔄 CI/CD Pipeline
-EOF
-
-if [ -f "docs/PIPELINE_SETUP.md" ]; then
-    echo "- **Automated Testing**: Full test suite on every push" >> docs/generated/summary.md
-    echo "- **Code Quality**: Static analysis and formatting checks" >> docs/generated/summary.md
-    echo "- **Deployment**: Automated deployment to production" >> docs/generated/summary.md
-fi
-
-cat >> docs/generated/summary.md << EOF
+- **Automated Testing**: Full test suite on every push
+- **Code Quality**: Static analysis and formatting checks
+- **Deployment**: Automated deployment to production
 
 ### 🌐 API Documentation
+- **REST API**: Type-safe endpoints with DTO validation
+- **Authentication**: Laravel Sanctum integration
+- **Examples**: Complete request/response examples
 EOF
-
-if [ -f "docs/API.md" ]; then
-    echo "- **REST API**: Type-safe endpoints with DTO validation" >> docs/generated/summary.md
-    echo "- **Authentication**: Laravel Sanctum integration" >> docs/generated/summary.md
-    echo "- **Examples**: Complete request/response examples" >> docs/generated/summary.md
-fi
 
 cat >> docs/generated/summary.md << EOF
 
@@ -794,11 +744,6 @@ cat >> docs/generated/summary.md << EOF
 EOF
 
 echo "✅ Comprehensive documentation generation complete!"
-echo ""
-echo "📚 Manual Documentation (Comprehensive Guides):"
-find docs/ -maxdepth 1 -name "*.md" -not -path "*/generated/*" | sort | while read file; do
-    echo "- 📖 $(basename "$file") ($(wc -l < "$file") lines)"
-done
 echo ""
 echo "🤖 Auto-Generated Documentation (Live Code Analysis):"
 echo "- 🧠 docs/generated/business-logic.md (DTOs, Actions, Models)"
