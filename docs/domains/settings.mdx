@@ -1,0 +1,120 @@
+---
+title: "Settings Domain"
+description: "Documentatie voor het Settings domein - Profiel en wachtwoord instellingen"
+---
+
+## Concept
+
+Het Settings domein beheert alle functionaliteit rondom gebruikersinstellingen. Dit domein maakt het mogelijk om:
+
+- **Profiel informatie bij te werken** (naam, e-mail)
+- **Wachtwoord te wijzigen** met huidige wachtwoord verificatie
+- **E-mail verificatie status te beheren** (bij e-mail wijziging)
+
+Het domein werkt samen met het User domain om gebruikersgegevens te beheren en biedt een veilige manier om gevoelige instellingen te wijzigen.
+
+## Data Structuur (DTO's)
+
+### ProfileUpdateData
+
+DTO voor het bijwerken van gebruikersprofiel informatie.
+
+<ParamField path="name" type="string" required>
+  Volledige naam van de gebruiker (max 255 karakters)
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker (max 255 karakters, moet geldig e-mail formaat zijn)
+</ParamField>
+
+<ParamField path="userId" type="int|null">
+  Optionele user ID (wordt automatisch ingevuld vanuit de ingelogde gebruiker)
+</ParamField>
+
+### PasswordUpdateData
+
+DTO voor het wijzigen van het wachtwoord.
+
+<ParamField path="currentPassword" type="string" required>
+  Huidige wachtwoord van de gebruiker (moet overeenkomen met opgeslagen wachtwoord)
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Nieuw wachtwoord (minimaal 8 karakters)
+</ParamField>
+
+<ParamField path="passwordConfirmation" type="string" required>
+  Bevestiging van het nieuwe wachtwoord (moet overeenkomen met password)
+</ParamField>
+
+## Belangrijkste Acties
+
+### UpdatePasswordAction
+
+Wijzigt het wachtwoord van een gebruiker na verificatie van het huidige wachtwoord.
+
+**Functionaliteit:**
+- Verifieert dat het huidige wachtwoord correct is
+- Gooit ValidationException als huidige wachtwoord incorrect is
+- Hasht en update het nieuwe wachtwoord
+- Retourneert de bijgewerkte User
+
+**Gebruik:**
+```php src/Domain/Settings/Actions/UpdatePasswordAction.php
+$action = new UpdatePasswordAction();
+$user = auth()->user();
+$passwordData = PasswordUpdateData::from([
+    'currentPassword' => 'old-password',
+    'password' => 'newpassword123',
+    'passwordConfirmation' => 'newpassword123',
+]);
+$updatedUser = $action($user, $passwordData);
+```
+
+## Gebruik
+
+### Voorbeeld: Profiel Bijwerken
+
+Het bijwerken van een profiel wordt gedaan via het User domain (UpdateUserProfileAction). Zie [User Domain](/domains/user) voor details.
+
+### Voorbeeld: Wachtwoord Wijzigen vanuit een Controller
+
+```php src/App/Portal/Settings/Controllers/PasswordController.php
+<?php
+
+namespace App\Portal\Settings\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Src\Domain\Settings\Actions\UpdatePasswordAction;
+use Src\Domain\Settings\Data\PasswordUpdateData;
+use Src\Support\Controllers\Controller;
+
+class PasswordController extends Controller
+{
+    public function update(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        
+        $passwordData = PasswordUpdateData::from($request->all());
+        
+        app(UpdatePasswordAction::class)($user, $passwordData);
+        
+        return back();
+    }
+}
+```
+
+## Model Relaties
+
+Het Settings domein gebruikt het `User` model uit het User domain. Zie [User Domain](/domains/user) voor details over het User model.
+
+## Beveiliging
+
+- **Wachtwoord verificatie:** Huidige wachtwoord moet worden geverifieerd voordat wijziging mogelijk is
+- **E-mail verificatie:** Bij e-mail wijziging wordt email_verified_at gereset (zie UpdateUserProfileAction)
+- **Authenticatie vereist:** Alle Settings acties vereisen een ingelogde gebruiker

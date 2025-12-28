@@ -1,38 +1,36 @@
 ---
 title: "Incremental Documentation Updates"
-description: "Update documentatie automatisch bij code wijzigingen zonder alles opnieuw te genereren"
+description: "Update documentatie incrementeel wanneer je code wijzigingen maakt - geen volledige regeneratie nodig"
 icon: "arrows-rotate"
 ---
 
 ## Overzicht
 
-De **Incremental Documentation Update** stap maakt het mogelijk om documentatie automatisch bij te werken wanneer je code wijzigingen maakt, zonder de volledige documentatie opnieuw te genereren.
+Deze stap update **alleen** de documentatie bestanden die beïnvloed zijn door code wijzigingen. Je hoeft niet alle documentatie opnieuw te genereren - alleen wat er veranderd is wordt geüpdatet.
 
-<Tip>
-  **Wanneer gebruiken:** Na het maken van wijzigingen aan Models, DTOs, Actions, of het toevoegen van nieuwe domains.
-</Tip>
+**Wat deze stap doet:**
+- 🔍 Detecteert wijzigingen via git diff (vergelijk tegen branch of uncommitted changes)
+- 📝 Update alleen betrokken bestanden (domains, logic flows, cases)
+- ✅ Valideert alle wijzigingen (syntax, frontmatter, Mintlify components)
+- 🔗 Update navigatie als bestanden worden toegevoegd/verwijderd
+- 🎯 Houdt consistentie met bestaande documentatie stijl
 
-## Wat doet deze stap?
+## When to Use
 
-- 🔍 **Detecteert changes** via git diff (vergelijk met branch of uncommitted changes)
-- 📝 **Werkt alleen relevante bestanden bij** (domains, logic flows, cases)
-- ✅ **Valideert alle wijzigingen** (syntax, frontmatter, Mintlify components)
-- 🔗 **Werkt navigatie bij** als bestanden worden toegevoegd/verwijderd
-- 🎯 **Behoudt consistentie** met bestaande documentatie stijl
+- ✅ Je hebt wijzigingen gemaakt aan domain code en wilt documentatie synchroniseren
+- ✅ Je hebt Actions, DTOs, of Models toegevoegd/aangepast
+- ✅ Je wilt vergelijken tegen een specifieke branch (master/dev/main)
+- ✅ Je wilt niet alle documentatie opnieuw genereren vanaf scratch
 
-## Wanneer gebruiken?
-
-Gebruik deze stap wanneer je:
-- ✅ Code wijzigingen hebt gemaakt in `src/Domain/`
-- ✅ Nieuwe Actions, DTOs, of Models hebt toegevoegd
-- ✅ Je documentatie wilt synchroniseren met changes vanaf een branch
-- ✅ Niet de volledige documentatie wilt regenereren
-
-## Hoe te gebruiken
+## How to Use
 
 ### Stap 1: Open Cursor Composer
 
-Press `Cmd + E` (Mac) or `Ctrl + E` (Windows) om de Composer agents te openen.
+Druk op `Cmd + E` (Mac) of `Ctrl + E` (Windows) om de Composer agents te openen.
+
+<Note>
+**Tip:** Zorg ervoor dat je in **"Agent"** modus bent voor beste resultaten.
+</Note>
 
 ### Stap 2: Load Context
 
@@ -48,7 +46,7 @@ Geef de volgende context aan Cursor door `@` te typen en te selecteren:
 
 ### Stap 3: Voer de Update uit
 
-Kopieer en plak de onderstaande prompt in de Composer chat en druk op **Enter**:
+Kopieer en plak de code block hieronder in de Composer chat en druk op **Enter**:
 
 ```text
 You are an autonomous Documentation Engineer. Execute ONLY the Incremental Documentation Update step.
@@ -160,64 +158,88 @@ For each affected Action:
 Report when Incremental Documentation Update is complete. Do NOT proceed to other tasks.
 ```
 
-## Vergelijkingsmodi
+## Comparison Modes
 
-De stap ondersteunt **twee vergelijkingsmodi**:
+### Branch Comparison
 
-### 1. Branch Comparison Mode
-
-Vergelijk je huidige branch tegen een target branch (master/dev/main):
+Vergelijk tegen een specifieke branch (bijv. `master`, `dev`, `main`):
 
 ```bash
-# Alle changes in je branch sinds master
+# De stap detecteert automatisch alle wijzigingen sinds de branch
 git diff --name-only master
 ```
 
-### 2. Uncommitted Changes Mode
+**Gebruik wanneer:**
+- Je wilt alle wijzigingen sinds de laatste merge documenteren
+- Je werkt aan een feature branch en wilt alles syncen
+- Je wilt een complete update na een grote refactor
 
-Alleen uncommitted lokale changes:
+### Uncommitted Changes
+
+Gebruik alleen uncommitted changes:
 
 ```bash
-# Alleen uncommitted changes
+# Unstaged changes
 git diff --name-only
+
+# Staged changes
 git diff --name-only --staged
 ```
 
-## Gebruiksvoorbeelden
+**Gebruik wanneer:**
+- Je wilt snel documentatie updaten voor lokale wijzigingen
+- Je werkt aan kleine wijzigingen en wilt direct syncen
+- Je wilt testen of de update stap werkt
 
-### Voorbeeld 1: Na het wijzigen van een Action
+## Usage Examples
 
-```bash
-# Je hebt gewijzigd: src/Domain/Assignments/Actions/CreateAssignmentAction.php
-# Stap zal:
-# ✅ docs/domains/assignments.mdx bijwerken (Action sectie)
-# ✅ docs/logic/assignment-creation.mdx bijwerken (als logica is veranderd)
-```
-
-### Voorbeeld 2: Na het toevoegen van een DTO property
+### Example 1: After modifying an Action
 
 ```bash
-# Je hebt een property toegevoegd aan: src/Domain/Assignments/DTOs/CreateAssignmentDTO.php
-# Stap zal:
-# ✅ docs/domains/assignments.mdx bijwerken (DTO sectie met nieuwe <ParamField>)
+# Je hebt gewijzigd: src/Domain/Auth/Actions/LoginAction.php
+# De stap zal:
+# ✅ docs/domains/auth.mdx updaten (Action sectie)
+# ✅ docs/logic/login.mdx updaten (als logica gewijzigd is)
 ```
 
-### Voorbeeld 3: Na het aanmaken van een nieuw Domain
+### Example 2: After adding a DTO property
+
+```bash
+# Je hebt een property toegevoegd aan: src/Domain/Auth/Data/LoginData.php
+# De stap zal:
+# ✅ docs/domains/auth.mdx updaten (DTO sectie met nieuwe <ParamField>)
+```
+
+### Example 3: After creating a new Domain
 
 ```bash
 # Je hebt aangemaakt: src/Domain/Invoices/
-# Stap zal:
+# De stap zal:
 # ✅ docs/domains/invoices.mdx aanmaken
 # ✅ docs/logic/ bestanden aanmaken voor alle Actions in het domain
-# ✅ docs/docs.json navigatie bijwerken
+# ✅ docs/docs.json navigatie updaten
 ```
 
-## Voordelen
+### Example 4: Compare against master branch
 
-- ⚡ **Snel** - Werkt alleen bij wat veranderd is, niet alles
+```bash
+# Je wilt alle wijzigingen sinds master branch syncen
+# De stap zal:
+# ✅ Vergelijken tegen master branch
+# ✅ Alle documentatie updaten voor bestanden gewijzigd sinds master
+```
+
+## Benefits
+
+- ⚡ **Snel** - Update alleen wat gewijzigd is, niet alles
 - 🎯 **Gefocust** - Geen risico op overschrijven van ongerelateerde documentatie
 - 🔄 **Incrementeel** - Perfect voor doorlopende development workflow
 - ✅ **Veilig** - Valideert alle wijzigingen voor voltooiing
-- 🚀 **Efficiënt** - Run wanneer je wilt tijdens development
+- 🚀 **Efficiënt** - Run wanneer je wilt tijdens development, niet alleen tijdens volledige doc generatie
 
+## Notes
 
+- Deze stap is **NIET** onderdeel van de master orchestrator workflow
+- Gebruik deze stap **wanneer** je code wijzigingen maakt en docs in sync wilt houden
+- Je kunt deze stap **meerdere keren** runnen tijdens development
+- Het is veilig om deze stap te runnen zelfs als je al handmatig wat docs hebt geüpdatet

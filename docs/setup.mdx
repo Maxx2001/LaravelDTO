@@ -1,0 +1,254 @@
+---
+title: "Setup"
+description: "Installatie en configuratie van de development omgeving"
+---
+
+## Vereisten
+
+Voordat je begint, zorg ervoor dat je de volgende tools geïnstalleerd hebt:
+
+- **Docker** - Voor containerized development omgeving
+- **Docker Compose** - Voor het beheren van multi-container applicaties
+- **PHP 8.2+** - Als je lokaal PHP gebruikt (optioneel)
+- **Composer** - PHP dependency manager
+- **Node.js 20+** - Voor frontend dependencies
+- **npm** of **yarn** - Package manager voor JavaScript
+
+## Installatie Stappen
+
+<Steps>
+  <Step title="Clone Repository">
+    Clone het project naar je lokale machine:
+    
+    ```bash
+    git clone <repository-url>
+    cd LaravelDTO
+    ```
+  </Step>
+  
+  <Step title="Docker Setup">
+    Start de Docker containers met Docker Compose:
+    
+    ```bash
+    docker-compose up -d
+    ```
+    
+    Dit start alle benodigde services (Apache, MySQL, etc.)
+  </Step>
+  
+  <Step title="Backend Dependencies">
+    Installeer PHP dependencies via Composer:
+    
+    ```bash
+    composer install
+    ```
+    
+    Of als je Docker gebruikt:
+    
+    ```bash
+    docker-compose exec apache composer install
+    ```
+  </Step>
+  
+  <Step title="Environment Configuratie">
+    Kopieer het environment bestand en genereer de applicatie key:
+    
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    
+    Of met Docker:
+    
+    ```bash
+    docker-compose exec apache cp .env.example .env
+    docker-compose exec apache php artisan key:generate
+    ```
+    
+    **Belangrijk:** Pas `.env` aan met je database credentials en andere configuratie.
+  </Step>
+  
+  <Step title="Database Setup">
+    Run de migraties en seeders:
+    
+    ```bash
+    php artisan migrate:fresh --seed
+    ```
+    
+    Of met Docker:
+    
+    ```bash
+    docker-compose exec apache php artisan migrate:fresh --seed
+    ```
+    
+    <Note>
+      **Emphasize seeds!** De seeders vullen de database met test data die nodig is voor development.
+    </Note>
+  </Step>
+  
+  <Step title="Frontend Dependencies">
+    Installeer JavaScript dependencies:
+    
+    ```bash
+    npm install
+    ```
+    
+    Of met Docker:
+    
+    ```bash
+    docker-compose exec apache npm install
+    ```
+  </Step>
+  
+  <Step title="Build Frontend Assets">
+    Build de frontend assets voor development:
+    
+    ```bash
+    npm run dev
+    ```
+    
+    Of voor production build:
+    
+    ```bash
+    npm run build
+    ```
+  </Step>
+</Steps>
+
+## Development Commands
+
+### Composer Scripts
+
+Het project bevat handige Composer scripts in `composer.json`:
+
+<CodeGroup>
+```json composer.json
+"dev": [
+  "Composer\\Config::disableProcessTimeout",
+  "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+]
+```
+
+```bash
+# Start alle development services tegelijk
+composer dev
+```
+
+```bash
+# Start met SSR support
+composer dev:ssr
+```
+
+```bash
+# Run tests
+composer test
+```
+</CodeGroup>
+
+### NPM Scripts
+
+<CodeGroup>
+```json package.json
+"scripts": {
+  "build": "vite build",
+  "build:ssr": "vite build && vite build --ssr",
+  "dev": "vite",
+  "format": "prettier --write resources/",
+  "format:check": "prettier --check resources/",
+  "lint": "eslint . --fix"
+}
+```
+
+```bash
+# Development server
+npm run dev
+```
+
+```bash
+# Production build
+npm run build
+```
+
+```bash
+# Format code
+npm run format
+```
+
+```bash
+# Lint code
+npm run lint
+```
+</CodeGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Database connectie fouten">
+    **Probleem:** Kan niet verbinden met database
+    
+    **Oplossing:**
+    1. Controleer of MySQL container draait: `docker-compose ps`
+    2. Verifieer database credentials in `.env`
+    3. Check of de database service beschikbaar is: `docker-compose exec mysql mysql -u root -p`
+    4. Herstart containers: `docker-compose restart`
+  </Accordion>
+  
+  <Accordion title="Permission errors op storage">
+    **Probleem:** Permission denied errors bij schrijven naar storage
+    
+    **Oplossing:**
+    ```bash
+    chmod -R 775 storage bootstrap/cache
+    ```
+    
+    Of met Docker:
+    ```bash
+    docker-compose exec apache chmod -R 775 storage bootstrap/cache
+    ```
+  </Accordion>
+  
+  <Accordion title="Composer dependencies niet gevonden">
+    **Probleem:** Class not found errors
+    
+    **Oplossing:**
+    1. Run `composer dump-autoload`
+    2. Verifieer dat `vendor/` directory bestaat
+    3. Herinstalleer: `composer install --no-cache`
+  </Accordion>
+  
+  <Accordion title="Frontend assets niet geladen">
+    **Probleem:** CSS/JS bestanden niet gevonden
+    
+    **Oplossing:**
+    1. Run `npm run build` om assets te genereren
+    2. Check of `public/build/` directory bestaat
+    3. Verifieer Vite configuratie in `vite.config.ts`
+    4. Clear cache: `php artisan cache:clear`
+  </Accordion>
+  
+  <Accordion title="Port al in gebruik">
+    **Probleem:** Port 80 of andere poorten al in gebruik
+    
+    **Oplossing:**
+    1. Stop andere services die de poort gebruiken
+    2. Wijzig poorten in `docker-compose.yml`
+    3. Update `APP_URL` in `.env` met nieuwe poort
+  </Accordion>
+</AccordionGroup>
+
+## Volgende Stappen
+
+Na een succesvolle installatie:
+
+1. **Lees de Development Workflow** - Leer hoe je nieuwe features toevoegt
+2. **Bekijk Domain Documentatie** - Begrijp de DDD architectuur
+3. **Check Business Logic Flows** - Zie hoe complexe workflows werken
+4. **Start Development** - Begin met het toevoegen van nieuwe features
+
+<Card
+  title="Development Workflow"
+  icon="code"
+  href="/development"
+>
+  Leer hoe je nieuwe features toevoegt volgens DDD principes
+</Card>

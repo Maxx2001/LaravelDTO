@@ -1,111 +1,122 @@
 ---
-title: "AI Docs Kit"
-description: "Automated documentation generation for Laravel DDD projects"
+title: "Laravel DTO"
+description: "Domain Driven Design demonstratie met type-safe DTOs in Laravel"
 ---
 
-## Welcome
+## Welkom
 
-AI Docs Kit generates comprehensive documentation for Laravel Domain-Driven Design projects using Cursor AI. Get professional Mintlify documentation in minutes.
+Welkom bij de documentatie van **Laravel DTO** - een uitgebreide demonstratie van Domain Driven Design (DDD) architectuur met Spatie Laravel Data voor type-safe DTOs in Laravel.
 
-<Card
-  title="Quick Start"
-  icon="rocket"
-  href="https://github.com/your-org/ai-docs-kit#-quick-start"
-  horizontal
->
-  Initialize the kit and generate your first documentation.
-</Card>
+Dit project toont hoe je een schone, onderhoudbare Laravel applicatie bouwt met:
+- **Domain-Driven Design** - Scheiding van business logica en framework code
+- **Type-Safe DTOs** - Gebruik van Spatie Laravel Data voor bulletproof data handling
+- **Domain Actions** - Geëncapsuleerde business logica met single responsibility
+- **Modern Frontend** - Vue.js 3 + TypeScript + Inertia.js + Tailwind CSS
 
-## What You Get
+## Architectuur
+
+Dit project gebruikt een **Domain-Driven Design** architectuur waarbij business logica gescheiden is van het framework. Dit zorgt voor:
+
+- **Betere testbaarheid** - Business logica is onafhankelijk van Laravel
+- **Herbruikbaarheid** - Domain code kan in andere contexten gebruikt worden
+- **Duidelijkheid** - Business regels zijn expliciet gedocumenteerd
+- **Onderhoudbaarheid** - Wijzigingen in business logica hebben minimale impact op framework code
+
+### Request Flow
+
+<Steps>
+  <Step title="Controller">
+    Ontvangt HTTP request en valideert input via DTO
+  </Step>
+  <Step title="DTO (Data Transfer Object)">
+    Valideert en transformeert request data naar type-safe objecten
+  </Step>
+  <Step title="Domain Action">
+    Voert business logica uit in geïsoleerde, testbare classes
+  </Step>
+  <Step title="Response">
+    Retourneert response via Inertia of JSON API
+  </Step>
+</Steps>
+
+## Navigatie
 
 <CardGroup cols={2}>
   <Card
-    title="Domain Documentation"
+    title="Setup"
+    icon="rocket"
+    href="/setup"
+  >
+    Start hier: Installatie en configuratie van de development omgeving
+  </Card>
+  <Card
+    title="Development Workflow"
+    icon="code"
+    href="/development"
+  >
+    Leer hoe je nieuwe features toevoegt volgens DDD principes
+  </Card>
+  <Card
+    title="Business Logic"
+    icon="diagram-project"
+    href="/logic"
+  >
+    Documentatie van alle business logic flows en workflows
+  </Card>
+  <Card
+    title="Domains"
+    icon="cube"
+    href="/domains"
+  >
+    Complete documentatie van alle domain DTOs, Actions en Models
+  </Card>
+</CardGroup>
+
+## Documentatie Workflows
+
+<CardGroup cols={2}>
+  <Card
+    title="Development Workflow"
+    icon="code"
+    href="/development"
+  >
+    Stap-voor-stap gids voor het toevoegen van nieuwe features
+  </Card>
+  <Card
+    title="Incremental Documentation Updates"
+    icon="arrows-rotate"
+    href="/steps/step-incremental-update"
+  >
+    Update documentatie incrementeel wanneer je code wijzigingen maakt - geen volledige regeneratie nodig
+  </Card>
+</CardGroup>
+
+## Wat Je Krijgt
+
+<CardGroup cols={2}>
+  <Card
+    title="Domain Documentatie"
     icon="cube"
   >
-    Complete DTOs, Actions, and Models documentation with code examples.
+    Complete DTOs, Actions, en Models documentatie met code voorbeelden
   </Card>
   <Card
     title="Business Logic Flows"
     icon="diagram-project"
   >
-    Mermaid diagrams, business rules, and QA scenarios.
+    Mermaid diagrammen, business regels, en QA scenario's
   </Card>
   <Card
     title="Case Studies"
     icon="folder-tree"
   >
-    Inter-system interaction documentation for complex workflows.
+    Inter-system interactie documentatie voor complexe workflows
   </Card>
   <Card
-    title="Navigation"
+    title="Georganiseerde Navigatie"
     icon="map"
   >
-    Organized 4-tab structure: Getting Started, Logic, Cases, Domains.
-  </Card>
-</CardGroup>
-
-## How It Works
-
-<Steps>
-  <Step title="Initialize">
-    Run `npx ai-docs-kit init` in your Laravel project to copy templates and create config.
-  </Step>
-  <Step title="Configure">
-    Edit `ai-docs.config.json` with your project name, language, and domain path.
-  </Step>
-  <Step title="Generate">
-    Open Cursor, load context, and run the master orchestrator prompt.
-  </Step>
-  <Step title="Preview">
-    Run `mint dev` to preview your generated documentation locally.
-  </Step>
-</Steps>
-
-## Examples
-
-See example output in the `examples/` folder:
-
-<CardGroup cols={3}>
-  <Card
-    title="Domain Example"
-    icon="file-code"
-    href="/examples/sample-domain"
-  >
-    Sample domain documentation
-  </Card>
-  <Card
-    title="Logic Example"
-    icon="file-lines"
-    href="/examples/sample-logic-flow"
-  >
-    Sample business logic flow
-  </Card>
-  <Card
-    title="Case Example"
-    icon="file-circle-check"
-    href="/examples/sample-case"
-  >
-    Sample case study
-  </Card>
-</CardGroup>
-
-## Resources
-
-<CardGroup cols={2}>
-  <Card
-    title="GitHub Repository"
-    icon="github"
-    href="https://github.com/your-org/ai-docs-kit"
-  >
-    Source code, issues, and contributions.
-  </Card>
-  <Card
-    title="Mintlify Documentation"
-    icon="book"
-    href="https://mintlify.com/docs"
-  >
-    Learn more about Mintlify components and features.
+    4-tab structuur: Getting Started, Business Logic, Cases, Domains
   </Card>
 </CardGroup>
 

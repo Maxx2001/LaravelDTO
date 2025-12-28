@@ -1,0 +1,206 @@
+---
+title: "User Domain"
+description: "Documentatie voor het User domein - Gebruikersbeheer en profiel operaties"
+---
+
+## Concept
+
+Het User domein beheert alle functionaliteit rondom gebruikers en gebruikersprofielen. Dit domein maakt het mogelijk om:
+
+- **Gebruikersprofielen bij te werken** (naam, e-mail)
+- **Gebruikers te verwijderen** met veilige logout
+- **Gebruikersdata te transformeren** naar DTOs voor API responses
+
+Het domein bevat het centrale User model en Actions voor gebruikersbeheer operaties.
+
+## Data Structuur (DTO's)
+
+### UserData
+
+DTO voor het representeren van gebruikersdata in responses.
+
+<ParamField path="id" type="int|null">
+  Unieke identifier van de gebruiker
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Volledige naam van de gebruiker (max 255 karakters)
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker (max 255 karakters, moet geldig e-mail formaat zijn)
+</ParamField>
+
+<ParamField path="emailVerifiedAt" type="string|null">
+  Timestamp wanneer het e-mailadres is geverifieerd (null indien niet geverifieerd)
+</ParamField>
+
+## Belangrijkste Acties
+
+### UpdateUserProfileAction
+
+Werkt gebruikersprofiel informatie bij (naam en e-mail).
+
+**Functionaliteit:**
+- Update naam en e-mail van de gebruiker
+- Reset email_verified_at naar null als e-mail is gewijzigd
+- Gebruikt fill() voor mass assignment
+- Retourneert de bijgewerkte User
+
+**Gebruik:**
+```php src/Domain/User/Actions/UpdateUserProfileAction.php
+$action = new UpdateUserProfileAction();
+$user = auth()->user();
+$profileData = ProfileUpdateData::from([
+    'name' => 'John Doe',
+    'email' => 'john@example.com',
+]);
+$updatedUser = $action($user, $profileData);
+```
+
+### DeleteUserAction
+
+Verwijdert een gebruiker uit het systeem.
+
+**Functionaliteit:**
+- Logt de gebruiker uit voordat verwijdering
+- Verwijdert de gebruiker uit de database
+- Retourneert true bij succesvolle verwijdering, false bij falen
+
+**Gebruik:**
+```php src/Domain/User/Actions/DeleteUserAction.php
+$action = new DeleteUserAction();
+$user = auth()->user();
+$result = $action($user);
+```
+
+## Gebruik
+
+### Voorbeeld: Profiel Bijwerken vanuit een Controller
+
+```php src/App/Portal/Settings/Controllers/ProfileController.php
+<?php
+
+namespace App\Portal\Settings\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Src\Domain\Settings\Data\ProfileUpdateData;
+use Src\Domain\User\Actions\UpdateUserProfileAction;
+use Src\Support\Controllers\Controller;
+
+class ProfileController extends Controller
+{
+    public function update(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        
+        $profileData = ProfileUpdateData::from($request->all());
+        
+        app(UpdateUserProfileAction::class)($user, $profileData);
+        
+        return to_route('profile.edit');
+    }
+}
+```
+
+### Voorbeeld: Gebruiker Verwijderen
+
+```php src/App/Portal/Settings/Controllers/ProfileController.php
+<?php
+
+namespace App\Portal\Settings\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Src\Domain\User\Actions\DeleteUserAction;
+use Src\Support\Controllers\Controller;
+
+class ProfileController extends Controller
+{
+    public function destroy(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+        
+        app(DeleteUserAction::class)($user);
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        return redirect('/');
+    }
+}
+```
+
+### Voorbeeld: User Data Ophalen
+
+```php
+use Src\Domain\User\Models\User;
+use Src\Domain\User\Data\UserData;
+
+$user = User::find(1);
+$userData = UserData::from($user);
+// Of via WithData trait:
+$userData = $user->toData();
+```
+
+## Model Details (Eloquent)
+
+### User Model
+
+Het User model is gelegen in `src/Domain/User/Models/User.php` en extend Laravel's Authenticatable class.
+
+**Fillable Attributes:**
+- `name` - Volledige naam van de gebruiker
+- `email` - E-mailadres van de gebruiker
+- `password` - Gehasht wachtwoord
+
+**Hidden Attributes:**
+- `password` - Wachtwoord wordt verborgen in serialisatie
+- `remember_token` - Remember token wordt verborgen
+
+**Casts:**
+- `email_verified_at` - DateTime cast
+- `password` - Hashed cast (automatisch hashing)
+
+**Traits:**
+- `HasFactory` - Voor model factories
+- `Notifiable` - Voor Laravel notifications
+- `WithData` - Spatie Laravel Data trait voor DTO transformatie
+
+**Data Class:**
+Het model gebruikt `UserData::class` als data class voor DTO transformatie via de `WithData` trait.
+
+**Factory:**
+Het model heeft een factory via `Database\Factories\UserFactory`.
+
+## Relaties
+
+Het User model heeft momenteel geen expliciete Eloquent relaties gedefinieerd, maar kan worden uitgebreid met relaties naar andere models indien nodig.
+
+## Scopes
+
+Het User model heeft momenteel geen custom query scopes gedefinieerd.
+
+## Accessors
+
+Het User model heeft momenteel geen custom accessors gedefinieerd, maar gebruikt standaard Laravel accessors voor timestamps en andere attributes.
+
+## Beveiliging
+
+- **Password Hashing:** Wachtwoorden worden automatisch gehasht via de `hashed` cast
+- **Mass Assignment Protection:** Alleen fillable attributes kunnen worden geüpdatet
+- **Authentication:** Model extend Authenticatable voor Laravel authentication
+- **Email Verification:** email_verified_at wordt gereset bij e-mail wijziging

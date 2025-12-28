@@ -11,30 +11,55 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guide",
+        "tab": "Getting Started",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Essentials",
             "pages": [
               "index",
-              {
-                "group": "AI Tools",
-                "pages": [
-                  "ai-tools/cursor",
-                  "ai-tools/claude-code",
-                  "ai-tools/windsurf"
-                ]
-              }
+              "setup",
+              "development",
+              "steps/step-incremental-update"
             ]
           },
           {
-            "group": "Examples",
+            "group": "AI Tools",
             "pages": [
-              "examples/sample-domain",
-              "examples/sample-logic-flow",
-              "examples/sample-case"
+              "ai-tools/cursor",
+              "ai-tools/claude-code",
+              "ai-tools/windsurf"
             ]
           }
+        ]
+      },
+      {
+        "tab": "Business Logic",
+        "pages": [
+          "logic/login",
+          "logic/register",
+          "logic/password-reset-link",
+          "logic/reset-password",
+          "logic/confirm-password",
+          "logic/update-password",
+          "logic/update-profile",
+          "logic/delete-user"
+        ]
+      },
+      {
+        "tab": "Cases",
+        "pages": [
+          "cases/user-registration-email-verification",
+          "cases/password-reset-email-delivery",
+          "cases/profile-update-email-verification",
+          "cases/user-deletion-session-cleanup"
+        ]
+      },
+      {
+        "tab": "Domains",
+        "pages": [
+          "domains/auth",
+          "domains/settings",
+          "domains/user"
         ]
       }
     ],

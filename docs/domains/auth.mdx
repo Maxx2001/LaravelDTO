@@ -1,0 +1,394 @@
+---
+title: "Auth Domain"
+description: "Documentatie voor het Auth domein - Authenticatie, registratie en wachtwoordbeheer"
+---
+
+## Concept
+
+Het Auth domein beheert alle functionaliteit rondom authenticatie en autorisatie in de applicatie. Dit domein maakt het mogelijk om:
+
+- **Gebruikers te registreren** met naam, e-mail en wachtwoord
+- **In te loggen** met e-mail en wachtwoord
+- **Wachtwoord reset links te versturen** via e-mail
+- **Wachtwoorden te resetten** met een token
+- **Wachtwoorden te bevestigen** voor gevoelige acties
+
+Het domein gebruikt Laravel's ingebouwde authenticatie systeem en integreert met Spatie Laravel Data voor type-safe DTOs.
+
+## Data Structuur (DTO's)
+
+### LoginData
+
+DTO voor het inloggen van een gebruiker.
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker (moet een geldig e-mail formaat zijn)
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Wachtwoord van de gebruiker
+</ParamField>
+
+<ParamField path="remember" type="bool">
+  Of de gebruiker ingelogd moet blijven (default: false)
+</ParamField>
+
+### RegisterData
+
+DTO voor het registreren van een nieuwe gebruiker.
+
+<ParamField path="name" type="string" required>
+  Volledige naam van de gebruiker (max 255 karakters)
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker (moet uniek zijn, max 255 karakters)
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Wachtwoord van de gebruiker (minimaal 8 karakters)
+</ParamField>
+
+<ParamField path="passwordConfirmation" type="string" required>
+  Bevestiging van het wachtwoord (moet overeenkomen met password)
+</ParamField>
+
+### PasswordResetLinkData
+
+DTO voor het aanvragen van een wachtwoord reset link.
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker die de reset link wil ontvangen
+</ParamField>
+
+### NewPasswordData
+
+DTO voor het resetten van een wachtwoord met een token.
+
+<ParamField path="token" type="string" required>
+  Reset token die is ontvangen via e-mail
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  E-mailadres van de gebruiker
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Nieuw wachtwoord (minimaal 8 karakters)
+</ParamField>
+
+<ParamField path="password_confirmation" type="string" required>
+  Bevestiging van het nieuwe wachtwoord (moet overeenkomen met password)
+</ParamField>
+
+### ConfirmPasswordData
+
+DTO voor het bevestigen van het huidige wachtwoord.
+
+<ParamField path="password" type="string" required>
+  Huidige wachtwoord van de gebruiker
+</ParamField>
+
+## Belangrijkste Acties
+
+### LoginAction
+
+Logt een gebruiker in met e-mail en wachtwoord.
+
+**Functionaliteit:**
+- Valideert e-mail en wachtwoord via Laravel Auth
+- Ondersteunt "remember me" functionaliteit
+- Gooit ValidationException als authenticatie faalt
+- Retourneert true bij succesvolle login
+
+**Gebruik:**
+```php src/Domain/Auth/Actions/LoginAction.php
+$action = new LoginAction();
+$loginData = LoginData::from([
+    'email' => 'user@example.com',
+    'password' => 'password',
+    'remember' => true,
+]);
+$result = $action($loginData);
+```
+
+### RegisterAction
+
+Registreert een nieuwe gebruiker in het systeem.
+
+**Functionaliteit:**
+- Creëert een nieuwe User met gehasht wachtwoord
+- Valideert dat e-mail uniek is (via DTO validatie)
+- Dispatched Registered event voor verdere verwerking
+- Retourneert de aangemaakte User
+
+**Gebruik:**
+```php src/Domain/Auth/Actions/RegisterAction.php
+$action = new RegisterAction();
+$registerData = RegisterData::from([
+    'name' => 'John Doe',
+    'email' => 'john@example.com',
+    'password' => 'password123',
+    'passwordConfirmation' => 'password123',
+]);
+$user = $action($registerData);
+```
+
+### SendPasswordResetLinkAction
+
+Verstuurt een wachtwoord reset link naar het opgegeven e-mailadres.
+
+**Functionaliteit:**
+- Gebruikt Laravel's Password facade om reset link te versturen
+- Retourneert status string (Password::RESET_LINK_SENT, etc.)
+- E-mail wordt automatisch verstuurd door Laravel
+
+**Gebruik:**
+```php src/Domain/Auth/Actions/SendPasswordResetLinkAction.php
+$action = new SendPasswordResetLinkAction();
+$passwordResetLinkData = PasswordResetLinkData::from([
+    'email' => 'user@example.com',
+]);
+$status = $action($passwordResetLinkData);
+```
+
+### ResetPasswordAction
+
+Reset het wachtwoord van een gebruiker met een token.
+
+**Functionaliteit:**
+- Valideert token en e-mail combinatie
+- Update wachtwoord met nieuwe hash
+- Genereert nieuwe remember token
+- Dispatched PasswordReset event
+- Retourneert status string
+
+**Gebruik:**
+```php src/Domain/Auth/Actions/ResetPasswordAction.php
+$action = new ResetPasswordAction();
+$newPasswordData = NewPasswordData::from([
+    'token' => 'reset-token-from-email',
+    'email' => 'user@example.com',
+    'password' => 'newpassword123',
+    'password_confirmation' => 'newpassword123',
+]);
+$status = $action($newPasswordData);
+```
+
+### ConfirmPasswordAction
+
+Bevestigt dat de gebruiker het juiste wachtwoord heeft ingevoerd.
+
+**Functionaliteit:**
+- Valideert wachtwoord tegen de ingelogde gebruiker
+- Gooit ValidationException als wachtwoord incorrect is
+- Retourneert true bij succesvolle bevestiging
+- Gebruikt voor gevoelige acties (bijv. account verwijderen)
+
+**Gebruik:**
+```php src/Domain/Auth/Actions/ConfirmPasswordAction.php
+$action = new ConfirmPasswordAction();
+$user = auth()->user();
+$confirmPasswordData = ConfirmPasswordData::from([
+    'password' => 'current-password',
+]);
+$result = $action($user, $confirmPasswordData);
+```
+
+## Gebruik
+
+### Voorbeeld: Login vanuit een Controller
+
+```php src/App/Portal/Auth/Controllers/AuthenticatedSessionController.php
+<?php
+
+namespace App\Portal\Auth\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Src\Domain\Auth\Actions\LoginAction;
+use Src\Domain\Auth\Data\LoginData;
+use Src\Support\Controllers\Controller;
+
+class AuthenticatedSessionController extends Controller
+{
+    public function store(Request $request): RedirectResponse
+    {
+        // Validate the request first
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+        
+        // Create DTO from request
+        $loginData = LoginData::from($request->all());
+        
+        // Execute Action
+        app(LoginAction::class)($loginData);
+        
+        $request->session()->regenerate();
+        
+        return redirect()->intended(route('dashboard', absolute: false));
+    }
+}
+```
+
+### Voorbeeld: Registratie
+
+```php src/App/Portal/Auth/Controllers/RegisteredUserController.php
+<?php
+
+namespace App\Portal\Auth\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Src\Domain\Auth\Actions\RegisterAction;
+use Src\Domain\Auth\Data\RegisterData;
+use Src\Support\Controllers\Controller;
+
+class RegisteredUserController extends Controller
+{
+    public function store(Request $request): RedirectResponse
+    {
+        // Validate the request first
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+        
+        // Create DTO from request
+        $registerData = RegisterData::from($request->all());
+        
+        // Execute Action
+        $user = app(RegisterAction::class)($registerData);
+        
+        // Login the user
+        Auth::login($user);
+        
+        return to_route('dashboard');
+    }
+}
+```
+
+### Voorbeeld: Wachtwoord Reset Link Versturen
+
+```php src/App/Portal/Auth/Controllers/PasswordResetLinkController.php
+<?php
+
+namespace App\Portal\Auth\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Src\Domain\Auth\Actions\SendPasswordResetLinkAction;
+use Src\Domain\Auth\Data\PasswordResetLinkData;
+use Src\Support\Controllers\Controller;
+
+class PasswordResetLinkController extends Controller
+{
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+        
+        $passwordResetLinkData = PasswordResetLinkData::from($request->all());
+        
+        $status = app(SendPasswordResetLinkAction::class)($passwordResetLinkData);
+        
+        if ($status == Password::RESET_LINK_SENT) {
+            return back()->with('status', __($status));
+        }
+        
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
+    }
+}
+```
+
+### Voorbeeld: Wachtwoord Resetten
+
+```php src/App/Portal/Auth/Controllers/NewPasswordController.php
+<?php
+
+namespace App\Portal\Auth\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
+use Src\Domain\Auth\Actions\ResetPasswordAction;
+use Src\Domain\Auth\Data\NewPasswordData;
+use Src\Support\Controllers\Controller;
+
+class NewPasswordController extends Controller
+{
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+        
+        $newPasswordData = NewPasswordData::from($request->all());
+        
+        $status = app(ResetPasswordAction::class)($newPasswordData);
+        
+        if ($status == Password::PASSWORD_RESET) {
+            return redirect()->route('login')->with('status', __($status));
+        }
+        
+        throw ValidationException::withMessages([
+            'email' => [__($status)],
+        ]);
+    }
+}
+```
+
+### Voorbeeld: Wachtwoord Bevestigen
+
+```php src/App/Portal/Auth/Controllers/ConfirmablePasswordController.php
+<?php
+
+namespace App\Portal\Auth\Controllers;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Src\Domain\Auth\Actions\ConfirmPasswordAction;
+use Src\Domain\Auth\Data\ConfirmPasswordData;
+use Src\Domain\User\Models\User;
+use Src\Support\Controllers\Controller;
+
+class ConfirmablePasswordController extends Controller
+{
+    public function store(Request $request): RedirectResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        
+        $confirmPasswordData = ConfirmPasswordData::from($request->all());
+        
+        app(ConfirmPasswordAction::class)($user, $confirmPasswordData);
+        
+        $request->session()->put('auth.password_confirmed_at', time());
+        
+        return redirect()->intended();
+    }
+}
+```
+
+## Model Relaties
+
+Het Auth domein gebruikt het `User` model uit het User domain. Zie [User Domain](/domains/user) voor details over het User model.
+
+## Events
+
+Het Auth domein dispatched de volgende Laravel events:
+
+- **Registered** - Wanneer een nieuwe gebruiker wordt geregistreerd
+- **PasswordReset** - Wanneer een wachtwoord wordt gereset
+
+Deze events kunnen worden gebruikt voor verdere verwerking zoals e-mail verificatie of logging.
