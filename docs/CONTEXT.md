@@ -176,3 +176,4 @@ docs/
 Alle documentatie is georganiseerd in Mintlify tabs en klaar voor gebruik. Gebruik `@docs/` syntax in Cursor om snel toegang te krijgen tot specifieke documentatie.
 
 
+

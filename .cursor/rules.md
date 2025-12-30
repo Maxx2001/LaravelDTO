@@ -411,3 +411,4 @@ Gebruik `@` om documentatie te laden in Cursor:
 | Complexe interactie begrijpen | `@docs/cases/[case].mdx` |
 
 
+
