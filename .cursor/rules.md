@@ -410,3 +410,4 @@ Gebruik `@` om documentatie te laden in Cursor:
 | Business flow begrijpen | `@docs/logic/[flow].mdx` |
 | Complexe interactie begrijpen | `@docs/cases/[case].mdx` |
 
+
